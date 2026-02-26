@@ -1,0 +1,254 @@
+1) Multi-Scene Meta Puzzles (Gravity Falls Core DNA)
+
+These span multiple exploration scenes. Kids will obsess over these.
+
+Example: Symbol Cipher Language
+
+Every discovery scene shows a weird symbol alphabet.
+
+Journal collects symbols.
+
+Later puzzles require decoding a sentence using the symbols.
+
+Implementation:
+
+Map symbols → letters
+
+Show encoded strings
+
+Let player click symbols to translate
+
+Reward: Secret creatures or artifacts.
+
+
+2) Simple ciphers
+Decode a text using some simple ciphers you must figure out to reveal some lore. Examples
+Caesar Cipher (Classic, Works Great)
+
+Mechanic: Shift letters by N.
+
+Scene Example
+
+The journal page says:
+“JRGG QXFN”
+
+Player gets a slider or arrows to shift letters.
+
+UI Idea:
+
+Slider from -13 to +13
+
+Live decode preview
+
+Reward: Decoded word reveals artifact or clue.
+
+Why Kids Love It:
+They feel like hackers.
+Pigpen / Grid Cipher (Visual, No Math)
+
+Classic cipher using grids and dots.
+
+Scene
+
+Show the pigpen key chart on journal page.
+
+Encoded shapes form a word.
+
+Implementation:
+Just pre-encode words.
+Player clicks shapes → letters.
+Substitution Symbol Alphabet (Gravity Falls Core)
+
+Mechanic: Each letter replaced with a symbol.
+
+Scene Example
+
+Show:
+
+🔺 ☀️ 👁️ ☀️ 🔺
+
+Journal page shows mapping for some symbols.
+
+Player Task: Click symbols → letters.
+
+Implementation:
+
+Small symbol → letter mapping
+
+Missing letters guessed by context
+
+Difficulty Control:
+Reveal 30–70% of mappings.
+
+
+2) Location specifics
+🌲 Whispering Forest
+
+Ancient trees that creak in no wind. Something watches from between them.
+
+Strong. Classic mystery forest.
+
+Make It Mechanically Unique
+
+Listening puzzles: Identify which whisper is real vs echo
+
+Pattern puzzles: Tree symbols repeating across scenes
+
+Hidden path choices: Follow sound vs follow light
+
+Creature type bias: Nature, Shadow, Illusion
+
+Visual Gimmick
+
+Trees subtly lean toward the player.
+Eyes blink in bark textures.
+
+📚 Peculiar Library
+
+Books that rearrange themselves. A card catalog no one remembers making.
+
+This is the nerd kid jackpot location.
+
+Unique Mechanics
+
+Cipher puzzles everywhere
+
+Rearranging shelves puzzle (logic grid)
+
+Hidden messages in book spines
+
+NPC librarian who speaks in riddles
+
+Creature Type Bias
+
+Knowledge, Paper, Tech, Ink, Ghost.
+
+🏫 Abandoned School
+
+Closed for years. Chalkboards still have writing from unknown hands.
+
+This will hit emotionally. Good uncanny tone.
+
+Unique Mechanics
+
+Memory puzzles (classrooms frozen in time)
+
+Chalkboard riddles that change when you look away
+
+Locker combination puzzles
+
+Bell system puzzles (time-based)
+
+Creature Types
+
+Echo, Time, Poltergeist, Toy, Shadow.
+
+🕳️ Echo Cave
+
+Your voice comes back different. Sometimes it answers before you speak.
+
+This is your audio puzzle playground.
+
+Unique Mechanics
+
+Call-and-response sound puzzles
+
+Sequence echo puzzles
+
+Paradox riddles (“You hear yourself say X before you think it”)
+
+Mirror text puzzles
+
+Creature Types
+
+Crystal, Sound, Time, Ancient.
+
+3) Additional Locations
+Additional Location Ideas (High-Impact, Distinct)
+🧪 The Glitched Laboratory
+
+A science lab where experiments ran without scientists.
+
+Why It Slaps
+
+Kids love labs. Nerd power fantasy.
+
+Mechanics
+
+Combine chemicals logic puzzles
+
+Broken robots with logic circuits
+
+Screen terminals with cipher logs
+
+Frankenstein creatures
+
+Visual
+
+Flickering monitors, glowing tanks.
+
+🕹️ The Forgotten Arcade
+
+Machines run with no power. High scores from decades in the future.
+
+Mechanics
+
+Pixel puzzles
+
+Pattern matching games
+
+NPC trapped inside a cabinet
+
+Code hidden in high-score initials
+
+Creature Types
+
+Pixel, Tech, Glitch, Neon.
+
+🌊 The Drowned Dock
+
+A pier that sank but still appears at low tide.
+
+Mechanics
+
+Tide timing puzzles
+
+Reflection puzzles
+
+Nautical symbol codes
+
+Ghost sailor NPC
+
+Creature Types
+
+Water, Rust, Ghost, Deep.
+
+📡 The Silent Radio Tower
+
+Broadcasts nobody hears. But something hears you.
+
+Mechanics
+
+Frequency tuning puzzles
+
+Morse code mini-game
+
+Signal pattern matching
+
+Hidden messages in static
+
+This is S-tier Gravity Falls energy.
+
+🏚️ The Collector’s House
+
+Someone collected strange things. Then disappeared.
+
+Mechanics
+
+Artifact sorting puzzles
+
+Memory puzzles (who owned what)
+
+Hidden rooms behind object arrangements
+
+NPC diary pages

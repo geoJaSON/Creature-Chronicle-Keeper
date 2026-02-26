@@ -1,0 +1,109 @@
+Adding a New Creature
+Open client/src/lib/gameData.ts and add an entry to the CREATURES array:
+
+{
+  id: "your_creature",           // unique snake_case ID
+  name: "Your Creature",
+  type: "Nature",                // Tech | Nature | Weird | Shadow | Pixel | Water | Glitch | Deep
+  rarity: "uncommon",           // common | uncommon | rare (affects encounter rates & loot drops)
+  description: "What it looks like and feels like.",
+  lore: "Backstory and rumors about it.",
+  cipherClue: encodeCaesar("YOUR SECRET MESSAGE HERE"),  // auto-encodes with shift 3
+  decodedSecret: "YOUR SECRET MESSAGE HERE",             // must match exactly (plain text)
+  weakAgainst: "Tech",          // takes extra damage from this type
+  strongAgainst: "Shadow",      // deals extra damage to this type
+  locations: ["forest", "cave"],// where it can appear (use location IDs)
+  battlePower: 6,               // 1-10, affects battle difficulty
+  friendliness: 5,              // 1-10, affects befriend success chance
+  artSymbol: ">>",              // 2-char symbol shown in compact views
+}
+Then add a sprite in client/src/components/CreatureSprite.tsx:
+
+Create a function component like function YourCreature({ w, animate }: { w: number; animate: boolean })
+Draw an SVG with viewBox="0 0 100 100" and use w for width/height
+Use motion elements for idle animations when animate is true
+Add it to the CREATURE_MAP record: your_creature: YourCreature
+That's it — the creature will automatically appear in the right locations, drop loot based on its type, and have a cipher entry.
+
+Editing Cipher Clues
+In gameData.ts, find the creature and change two fields:
+
+cipherClue: encodeCaesar("NEW SECRET TEXT"),  // this gets auto-encrypted
+decodedSecret: "NEW SECRET TEXT",             // keep these identical
+The encodeCaesar function handles the encryption. The text can be any length, all caps reads best. The correct machine settings to manually decode are: combined rotor shift = 23, reflector = Direct, plugboard empty.
+
+If you want a cipher to unlock a hidden hotspot in exploration, the decodedSecret text should hint at something discoverable, then you add a hidden hotspot in explorationData.ts (see below).
+
+Adding Hidden Hotspots (Secret Areas)
+In client/src/lib/explorationData.ts, find a discovery scene's hotspots array and add:
+
+{
+  id: "unique_hotspot_id",
+  label: "What the Player Sees",
+  description: "What happens when they click it.",
+  reward: { type: "lore", text: "The lore entry they receive." },
+  // or: reward: { type: "artifact", artifactId: "glowing_mushroom" },
+  // or: reward: { type: "symbol", symbolKey: "A" },
+  hidden: true,
+  unlockedBySecret: "creature_id",  // creature whose cipher must be solved first
+}
+Adding/Editing Exploration Scenes
+In explorationData.ts, each location has a scene array (e.g., FOREST_SCENES). Four scene types:
+
+Discovery scene (hotspots to investigate):
+
+{
+  id: "location_scenename",
+  locationId: "forest",
+  type: "discovery",
+  title: "Scene Title",
+  description: "What the player sees.",
+  atmosphere: "Mood text shown in italics.",
+  hotspots: [
+    { id: "hotspot_id", label: "Clickable Thing", description: "Result text.",
+      reward: { type: "artifact", artifactId: "old_gear" } },
+  ],
+}
+Choice scene (branching decision):
+
+{
+  id: "location_choice", locationId: "forest", type: "choice",
+  title: "Title", description: "Setup text.", atmosphere: "Mood.",
+  choices: [
+    { id: "option_a", label: "Option A", description: "Teaser.",
+      outcome: "What happens.", reward: { type: "artifact", artifactId: "shadow_dust" } },
+    { id: "option_b", label: "Option B", description: "Teaser.",
+      outcome: "What happens.", reward: { type: "lore", text: "Lore entry." } },
+  ],
+}
+Puzzle scene (mini-game):
+
+{
+  id: "location_puzzle", locationId: "forest", type: "puzzle",
+  title: "Title", description: "Setup.", atmosphere: "Mood.",
+  puzzle: { puzzleType: "riddle", difficulty: 1,
+    data: { question: "What has...", options: ["A","B","C","D"], correctIndex: 2, flavor: "Hint." }
+  },
+  rewardArtifact: "strange_feather",
+}
+Puzzle types and their data shapes:
+
+pattern_memory — { symbols: string[], sequence: number[], displayTime: number }
+symbol_cipher — { encodedWord: string, answer: string, hintLetters: number[] }
+riddle — { question: string, options: string[], correctIndex: number, flavor: string }
+echo_sequence — { symbols: string[], sequence: number[], rounds: number }
+chemical_mix — { chemicals: {id, color, label}[], targetSequence: string[] }
+pixel_match — { pattern: number[][], options: number[][][], correctIndex: number, displayTime: number }
+tide_timing — { targetLevel: number, speed: number, rounds: number, tolerance: number }
+frequency_tune — { targetFrequency, startFrequency, tolerance, minFreq, maxFreq: number }
+artifact_sort — { items: {id, name, description, category}[], categories: string[] }
+Adding Artifacts
+Add the ID to the ArtifactId union type in shared/schema.ts
+Add the artifact details to the ARTIFACTS record in gameData.ts
+Add icon/color entries in client/src/pages/BasePage.tsx (look for ARTIFACT_ICONS and ARTIFACT_COLORS)
+Optionally add to a creature type's drop table in getArtifactsDropped in gameData.ts
+Location IDs for Reference
+forest, library, school, cave, lab, arcade, dock, tower, house
+
+Creature Type Drop Tables
+In getArtifactsDropped in gameData.ts — each type has a pool of 3 artifacts it can drop. Edit the drops record to change what creatures of each type give you.
