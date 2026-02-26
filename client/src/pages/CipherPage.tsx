@@ -206,7 +206,7 @@ export default function CipherPage() {
 
   return (
     <div className="h-full overflow-auto">
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -250,8 +250,9 @@ export default function CipherPage() {
           )}
         </AnimatePresence>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,320px)_1fr] gap-6 items-start">
+          {/* Left column: shift wheel + plugboard */}
+          <div className="space-y-4 order-2 lg:order-1">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -355,27 +356,29 @@ export default function CipherPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <div className="flex justify-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setShift(0);
+                  setPlugboard([]);
+                  setActivePlugLetter(null);
+                  setActiveCipherId(null);
+                  setInputText("");
+                  setEncodeInput("");
+                }}
+                className="text-xs w-full sm:w-auto"
+                data-testid="button-reset-machine"
+              >
+                <RotateCcw className="w-3 h-3 mr-1" /> Reset All Terminals
+              </Button>
+            </div>
           </div>
 
-          <div className="flex justify-center">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setShift(0);
-                setPlugboard([]);
-                setActivePlugLetter(null);
-                setActiveCipherId(null);
-                setInputText("");
-                setEncodeInput("");
-              }}
-              className="text-xs"
-              data-testid="button-reset-machine"
-            >
-              <RotateCcw className="w-3 h-3 mr-1" /> Reset All Terminals
-            </Button>
-          </div>
-
+          {/* Right column: cipher chamber */}
+          <div className="min-w-0 order-1 lg:order-2">
           <Card>
             <CardHeader className="pb-3 flex items-center justify-between gap-2">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -576,6 +579,7 @@ export default function CipherPage() {
               </AnimatePresence>
             </CardContent>
           </Card>
+          </div>
         </div>
 
         {unsolved.length > 0 && (

@@ -19,10 +19,14 @@ import {
   Shield,
   Sparkles,
   FileText,
+  BookMarked,
+  List,
+  ArrowRight,
 } from "lucide-react";
 import { useGameState } from "@/lib/gameState";
 import { CREATURES, TYPE_BG, TYPE_BADGE, TYPE_COLORS, RARITY_COLORS } from "@/lib/gameData";
 import { SYMBOL_ALPHABET, getSymbolForLetter } from "@/lib/explorationData";
+import { buildStoryChapters } from "@/lib/storyMode";
 import type { Creature } from "@shared/schema";
 import { CreatureSprite } from "@/components/CreatureSprite";
 
@@ -262,6 +266,7 @@ export default function JournalPage() {
   const { state, solveCipher, hasGadget } = useGameState();
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [filter, setFilter] = useState<FilterType>("all");
+  const [storyMode, setStoryMode] = useState(true);
 
   const entries = state.journal;
   const filteredEntries = filter === "all" ? entries : entries.filter((e) => e.status === filter);
@@ -306,8 +311,8 @@ export default function JournalPage() {
                 onClick={() => setFilter(f)}
                 data-testid={`filter-${f}`}
                 className={`text-xs px-3.5 py-1.5 rounded-full border transition-all capitalize ${filter === f
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "border-border text-muted-foreground"
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "border-border text-muted-foreground"
                   }`}
               >
                 {f}
@@ -433,23 +438,96 @@ export default function JournalPage() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-3"
           >
-            <h2 className="font-semibold text-lg flex items-center gap-2">
-              <FileText className="w-5 h-5 text-muted-foreground" /> Field Notes
-            </h2>
-            <div className="space-y-2">
-              {state.collectedLore.map((text, i) => (
-                <Card key={i}>
-                  <CardContent className="px-4 py-3">
-                    <div className="flex items-start gap-2">
-                      <ScrollText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground italic leading-relaxed" data-testid={`lore-entry-${i}`}>
-                        {text}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-semibold text-lg flex items-center gap-2">
+                <FileText className="w-5 h-5 text-muted-foreground" /> Field Notes
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setStoryMode((v) => !v)}
+                className="text-xs text-muted-foreground gap-1.5 h-7 px-2"
+              >
+                {storyMode ? (
+                  <><List className="w-3.5 h-3.5" /> Raw notes</>
+                ) : (
+                  <><BookMarked className="w-3.5 h-3.5" /> Story view</>
+                )}
+              </Button>
             </div>
+
+            {storyMode ? (
+              /* ── STORY MODE ── */
+              <div className="space-y-6">
+                {buildStoryChapters(state.collectedLore).map((chapter, ci) => (
+                  <motion.div
+                    key={chapter.locationId}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: ci * 0.05 }}
+                    className="space-y-2"
+                  >
+                    {/* Chapter header */}
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-2">
+                        {chapter.locationName}
+                      </span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+
+                    <Card className="border-border/60">
+                      <CardContent className="px-5 py-4 space-y-3">
+                        {/* Investigator voice opener */}
+                        <p className="text-xs text-muted-foreground italic leading-relaxed border-l-2 border-primary/30 pl-3">
+                          {chapter.header}
+                        </p>
+
+                        {/* Lore entries as flowing paragraphs */}
+                        <div className="space-y-2">
+                          {chapter.entries.map((text, ei) => (
+                            <p
+                              key={ei}
+                              className="text-sm leading-relaxed text-foreground"
+                              data-testid={`lore-entry-${chapter.locationId}-${ei}`}
+                            >
+                              {text}
+                            </p>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Transition bridge to next chapter */}
+                    {chapter.transition && (
+                      <div className="flex items-center gap-2 px-1 pt-1">
+                        <ArrowRight className="w-3 h-3 text-muted-foreground/50 flex-shrink-0" />
+                        <p className="text-xs text-muted-foreground/70 italic">{chapter.transition}</p>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              /* ── RAW MODE (original) ── */
+              <div className="space-y-2">
+                {state.collectedLore.map((raw, i) => {
+                  const text = raw.replace(/^\[[a-z_]+\]\s*/, "");
+                  return (
+                    <Card key={i}>
+                      <CardContent className="px-4 py-3">
+                        <div className="flex items-start gap-2">
+                          <ScrollText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-foreground italic leading-relaxed" data-testid={`lore-entry-${i}`}>
+                            {text}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
         )}
 

@@ -394,10 +394,10 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
                     whileTap={!examined ? { scale: 0.98 } : {}}
                     onClick={() => handleHotspotClick(hotspot)}
                     className={`w-full text-left p-3.5 rounded-lg border transition-all ${examined
-                        ? "border-white/20 bg-white/5"
-                        : isSecretHotspot
-                          ? "border-primary/40 bg-primary/10 cursor-pointer"
-                          : "border-white/10 bg-white/5 cursor-pointer"
+                      ? "border-white/20 bg-white/5"
+                      : isSecretHotspot
+                        ? "border-primary/40 bg-primary/10 cursor-pointer"
+                        : "border-white/10 bg-white/5 cursor-pointer"
                       }`}
                     data-testid={`hotspot-${hotspot.id}`}
                     disabled={examined}
@@ -672,10 +672,10 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${i < currentIndex
-                      ? "w-6 bg-primary"
-                      : i === currentIndex
-                        ? "w-6 bg-primary/70"
-                        : "w-3 bg-muted"
+                    ? "w-6 bg-primary"
+                    : i === currentIndex
+                      ? "w-6 bg-primary/70"
+                      : "w-3 bg-muted"
                     }`}
                 />
               ))}

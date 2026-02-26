@@ -245,9 +245,8 @@ export default function GamePage() {
                               return (
                                 <div
                                   key={c.id}
-                                  className={`w-8 h-8 rounded-md flex items-center justify-center ${
-                                    found ? "bg-white/15" : "bg-white/5"
-                                  }`}
+                                  className={`w-8 h-8 rounded-md flex items-center justify-center ${found ? "bg-white/15" : "bg-white/5"
+                                    }`}
                                 >
                                   {found ? (
                                     <CreatureSprite creatureId={c.id} size="sm" animate={false} />

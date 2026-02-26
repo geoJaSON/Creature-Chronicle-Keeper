@@ -62,7 +62,7 @@ function loadState(): GameState {
       if (!state.inventory.gadgetUses) state.inventory.gadgetUses = {};
     }
     return state;
-  } catch {}
+  } catch { }
   return { ...DEFAULT_STATE };
 }
 
@@ -299,14 +299,14 @@ export function getDebugAPI(): {
         "%cCCK Debug",
         "font-weight: bold; font-size: 14px",
         "\n\nAvailable commands:\n" +
-          "  CCK_DEBUG.revealAllSymbols()   - Unlock all cipher symbols (A–Z)\n" +
-          "  CCK_DEBUG.solveAllCiphers()   - Mark all creature ciphers as solved\n" +
-          "  CCK_DEBUG.addAllJournalEntries() - Add every creature to the journal (befriended)\n" +
-          "  CCK_DEBUG.giveAllArtifacts(n) - Add n of each artifact (default 5)\n" +
-          "  CCK_DEBUG.unlockAllGadgets()  - Unlock trap_camera, scanner, decoder_wheel\n" +
-          "  CCK_DEBUG.reset()             - Reset game to default state\n" +
-          "  CCK_DEBUG.getState()          - Return current game state (for inspection)\n" +
-          "  CCK_DEBUG.help()              - Show this message"
+        "  CCK_DEBUG.revealAllSymbols()   - Unlock all cipher symbols (A–Z)\n" +
+        "  CCK_DEBUG.solveAllCiphers()   - Mark all creature ciphers as solved\n" +
+        "  CCK_DEBUG.addAllJournalEntries() - Add every creature to the journal (befriended)\n" +
+        "  CCK_DEBUG.giveAllArtifacts(n) - Add n of each artifact (default 5)\n" +
+        "  CCK_DEBUG.unlockAllGadgets()  - Unlock trap_camera, scanner, decoder_wheel\n" +
+        "  CCK_DEBUG.reset()             - Reset game to default state\n" +
+        "  CCK_DEBUG.getState()          - Return current game state (for inspection)\n" +
+        "  CCK_DEBUG.help()              - Show this message"
       );
     },
 
