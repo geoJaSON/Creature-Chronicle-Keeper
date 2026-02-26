@@ -21,16 +21,20 @@ import {
   ScanLine,
   RotateCcw,
   ArrowRight,
+  ChevronUp,
   FlaskConical,
   Grid2x2,
   Anchor,
   Key,
   Map as MapIcon,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGameState } from "@/lib/gameState";
-import { ARTIFACTS, GADGETS } from "@/lib/gameData";
+import { ARTIFACTS, GADGETS, UPGRADES } from "@/lib/gameData";
 import type { ArtifactId } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { CraftingMinigame } from "@/components/CraftingMinigame";
+import { useState } from "react";
 
 const ARTIFACT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   settings: Settings,
@@ -78,7 +82,8 @@ const GADGET_COLORS: Record<string, string> = {
 };
 
 export default function BasePage() {
-  const { state, craftGadget, hasGadget } = useGameState();
+  const [activeCrafting, setActiveCrafting] = useState<(typeof GADGETS)[0] | null>(null);
+  const { state, craftGadget, buyUpgrade, hasGadget } = useGameState();
   const { toast } = useToast();
 
   const artifacts = state.inventory.artifacts;
@@ -91,13 +96,38 @@ export default function BasePage() {
   };
 
   const handleCraft = (gadget: (typeof GADGETS)[0]) => {
-    const success = craftGadget(gadget.id, gadget.recipe);
+    setActiveCrafting(gadget);
+  };
+
+  const handleCraftingResult = (success: boolean) => {
+    if (!activeCrafting) return;
+
     if (success) {
-      toast({ title: `Crafted: ${gadget.name}!`, description: "One use added. Gadgets are consumed when used." });
+      const crafted = craftGadget(activeCrafting.id, activeCrafting.recipe);
+      if (crafted) {
+        toast({ title: `Crafted: ${activeCrafting.name}!`, description: "One use added. Gadgets are consumed when used." });
+      } else {
+        toast({ title: "Missing materials", description: "Collect more artifacts.", variant: "destructive" });
+      }
+    } else {
+      toast({
+        title: "Crafting Failed",
+        description: "You stopped before ruining the materials. Try again.",
+        variant: "destructive",
+      });
+    }
+
+    setTimeout(() => setActiveCrafting(null), 500); // Wait for dialog animation
+  };
+
+  const handleUpgrade = (upgrade: (typeof UPGRADES)[0]) => {
+    const success = buyUpgrade(upgrade.id, upgrade.cost);
+    if (success) {
+      toast({ title: `Researched: ${upgrade.name}!`, description: "Permanent upgrade unlocked." });
     } else {
       toast({
         title: "Missing materials",
-        description: "Collect more artifacts from creature encounters.",
+        description: "Collect more artifacts to fund this research.",
         variant: "destructive",
       });
     }
@@ -174,12 +204,17 @@ export default function BasePage() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <h2 className="font-semibold text-lg flex items-center gap-2">
-            <Wrench className="w-5 h-5 text-muted-foreground" /> Crafting Bench
-          </h2>
+        <Tabs defaultValue="crafting" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="crafting" className="flex items-center gap-2">
+              <Wrench className="w-4 h-4" /> Crafting Bench
+            </TabsTrigger>
+            <TabsTrigger value="research" className="flex items-center gap-2">
+              <FlaskConical className="w-4 h-4" /> Research Station
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-4">
+          <TabsContent value="crafting" className="space-y-4 mt-4">
             {GADGETS.map((gadget, gi) => {
               const uses = state.inventory.gadgetUses?.[gadget.id] ?? 0;
               const craftable = canCraft(gadget.recipe);
@@ -226,8 +261,8 @@ export default function BasePage() {
                                 <span key={ri}>
                                   <span
                                     className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border ${met
-                                        ? "border-primary/30 text-primary bg-primary/10"
-                                        : "border-border text-muted-foreground"
+                                      ? "border-primary/30 text-primary bg-primary/10"
+                                      : "border-border text-muted-foreground"
                                       }`}
                                   >
                                     {artifact.name} ({have}/{req.quantity})
@@ -266,8 +301,95 @@ export default function BasePage() {
                 </motion.div>
               );
             })}
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="research" className="space-y-4 mt-4">
+            {UPGRADES.map((upgrade, ui) => {
+              const unlocked = !!state.upgrades?.[upgrade.id];
+              const buyable = !unlocked && canCraft(upgrade.cost);
+              return (
+                <motion.div
+                  key={upgrade.id}
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: ui * 0.1 }}
+                >
+                  <Card
+                    className={`${unlocked ? "border-primary bg-primary/5" : ""} relative overflow-visible`}
+                    data-testid={`card-upgrade-${upgrade.id}`}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border ${unlocked ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                          <ChevronUp className="w-7 h-7" />
+                        </div>
+                        <div className="space-y-2 flex-1 min-w-0">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold">{upgrade.name}</span>
+                              {unlocked && (
+                                <Badge variant="secondary" className="bg-primary/20 text-primary border-none">Active</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-foreground mt-0.5">{upgrade.description}</p>
+                          </div>
+
+                          {!unlocked && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {upgrade.cost.map((req, ri) => {
+                                const artifact = ARTIFACTS[req.artifactId];
+                                const have = artifacts[req.artifactId] || 0;
+                                const met = have >= req.quantity;
+                                return (
+                                  <span key={ri}>
+                                    <span
+                                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border ${met
+                                        ? "border-primary/30 text-primary bg-primary/10"
+                                        : "border-border text-muted-foreground"
+                                        }`}
+                                    >
+                                      {artifact?.name || req.artifactId} ({have}/{req.quantity})
+                                    </span>
+                                    {ri < upgrade.cost.length - 1 && (
+                                      <span className="text-muted-foreground/30 mx-0.5">+</span>
+                                    )}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpgrade(upgrade)}
+                          disabled={unlocked || !buyable}
+                          data-testid={`button-upgrade-${upgrade.id}`}
+                          variant={unlocked ? "secondary" : "default"}
+                          className="flex-shrink-0"
+                        >
+                          {unlocked ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 mr-1" /> Researched
+                            </>
+                          ) : buyable ? (
+                            <>
+                              <Sparkles className="w-3 h-3 mr-1" /> Research
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-3 h-3 mr-1" /> Research
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </TabsContent>
+        </Tabs>
 
         <Card className="bg-muted/30 border-dashed">
           <CardContent className="px-5 py-4 space-y-2 text-xs text-muted-foreground">
@@ -281,6 +403,14 @@ export default function BasePage() {
           </CardContent>
         </Card>
       </div>
+      {activeCrafting && (
+        <CraftingMinigame
+          gadgetName={activeCrafting.name}
+          open={!!activeCrafting}
+          onResult={handleCraftingResult}
+          onCancel={() => setActiveCrafting(null)}
+        />
+      )}
     </div>
   );
 }

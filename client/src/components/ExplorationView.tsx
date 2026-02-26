@@ -28,9 +28,12 @@ import type {
   FrequencyTuneData,
   ArtifactSortData,
   MorseCodeData,
+  WireConnectionData,
+  MastermindData,
 } from "@shared/schema";
-import { generateExplorationSequence, SYMBOL_ALPHABET } from "@/lib/explorationData";
+import { SYMBOL_ALPHABET, generateExplorationSequence } from "@/lib/explorationData";
 import { ARTIFACTS } from "@/lib/gameData";
+import { useGameState } from "@/lib/gameState";
 import { PatternMemory } from "@/components/puzzles/PatternMemory";
 import { SymbolCipher } from "@/components/puzzles/SymbolCipher";
 import { RiddleChallenge } from "@/components/puzzles/RiddleChallenge";
@@ -41,6 +44,8 @@ import { TideTiming } from "@/components/puzzles/TideTiming";
 import { FrequencyTune } from "@/components/puzzles/FrequencyTune";
 import { ArtifactSort } from "@/components/puzzles/ArtifactSort";
 import { MorseCodePuzzle } from "@/components/puzzles/MorseCodePuzzle";
+import { WireConnection } from "@/components/puzzles/WireConnection";
+import { Mastermind } from "@/components/puzzles/Mastermind";
 
 const LOCATION_GRADIENTS: Record<string, string> = {
   forest: "from-green-950 via-green-900 to-emerald-800",
@@ -269,6 +274,7 @@ interface Props {
 }
 
 export function ExplorationView({ locationId, locationName, discoveredSymbols, solvedCiphers, hasMap, onUseMap, onComplete, onLeave }: Props) {
+  const { hasGadget, useGadget } = useGameState();
   const [scenes, setScenes] = useState<ExplorationScene[]>(() => generateExplorationSequence(locationId));
   const [mapUsed, setMapUsed] = useState(false);
   const [showMapChoice, setShowMapChoice] = useState(hasMap);
@@ -282,6 +288,12 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
   const [choiceOutcome, setChoiceOutcome] = useState<string | null>(null);
   const [puzzleSolved, setPuzzleSolved] = useState(false);
   const [sceneComplete, setSceneComplete] = useState(false);
+
+  const handleUseLure = () => {
+    if (useGadget("creature_lure")) {
+      setCurrentIndex(scenes.length - 1);
+    }
+  };
 
   const scene = scenes[currentIndex];
   const isLastScene = currentIndex === scenes.length - 1;
@@ -594,6 +606,18 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
                   onComplete={handlePuzzleComplete}
                 />
               )}
+              {scene.puzzle?.puzzleType === "wire_connection" && (
+                <WireConnection
+                  data={scene.puzzle.data as WireConnectionData}
+                  onComplete={handlePuzzleComplete}
+                />
+              )}
+              {scene.puzzle?.puzzleType === "mastermind" && (
+                <Mastermind
+                  data={scene.puzzle.data as MastermindData}
+                  onComplete={handlePuzzleComplete}
+                />
+              )}
             </div>
           </div>
         );
@@ -667,7 +691,7 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
             >
               <ArrowLeft className="w-3 h-3 mr-1" /> Leave {locationName}
             </Button>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-1 justify-center">
               {scenes.map((_, i) => (
                 <div
                   key={i}
@@ -679,6 +703,14 @@ export function ExplorationView({ locationId, locationName, discoveredSymbols, s
                     }`}
                 />
               ))}
+            </div>
+
+            <div className="w-28 flex justify-end">
+              {hasGadget("creature_lure") && currentIndex < scenes.length - 1 && (
+                <Button variant="outline" size="sm" onClick={handleUseLure} className="text-amber-500 border-amber-500/30 hover:bg-amber-500/10 h-8 px-2">
+                  <Sparkles className="w-3 h-3 mr-1" /> Lure
+                </Button>
+              )}
             </div>
           </div>
 

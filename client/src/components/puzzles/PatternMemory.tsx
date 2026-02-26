@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Eye, RotateCcw } from "lucide-react";
 import type { PatternMemoryData } from "@shared/schema";
+import { useGameState } from "@/lib/gameState";
 
 interface Props {
   data: PatternMemoryData;
@@ -12,6 +13,7 @@ interface Props {
 type Phase = "watching" | "ready" | "input" | "result";
 
 export function PatternMemory({ data, onComplete }: Props) {
+  const { hasUpgrade } = useGameState();
   const [phase, setPhase] = useState<Phase>("watching");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [playerSequence, setPlayerSequence] = useState<number[]>([]);
@@ -25,20 +27,25 @@ export function PatternMemory({ data, onComplete }: Props) {
     setSuccess(null);
 
     let step = 0;
+    // Speed up the pattern: shorter flashes and less delay between them.
+    const rawDisplay = data.displayTime || 600;
+    const baseTime = rawDisplay * 0.4; // symbol lit time
+    const memoryTime = hasUpgrade("optic_augmentation") ? baseTime + 250 : baseTime;
+
     const interval = setInterval(() => {
       if (step < data.sequence.length) {
         setActiveIndex(data.sequence[step]);
         setShowStep(step + 1);
-        setTimeout(() => setActiveIndex(null), 600);
+        setTimeout(() => setActiveIndex(null), baseTime);
         step++;
       } else {
         clearInterval(interval);
-        setTimeout(() => setPhase("ready"), 400);
+        setTimeout(() => setPhase("ready"), 250);
       }
-    }, 900);
+    }, memoryTime + 200);
 
     return () => clearInterval(interval);
-  }, [data.sequence]);
+  }, [data.sequence, data.displayTime, hasUpgrade]);
 
   useEffect(() => {
     const cleanup = startWatching();
@@ -122,13 +129,12 @@ export function PatternMemory({ data, onComplete }: Props) {
               whileTap={isClickable ? { scale: 0.9 } : {}}
               animate={isActive ? { scale: 1.2, boxShadow: "0 0 20px rgba(var(--primary-rgb, 59 130 246), 0.5)" } : { scale: 1 }}
               onClick={() => isClickable && handleSymbolClick(i)}
-              className={`w-14 h-14 rounded-xl text-2xl flex items-center justify-center border-2 transition-colors select-none ${
-                isActive
+              className={`w-14 h-14 rounded-xl text-2xl flex items-center justify-center border-2 transition-colors select-none ${isActive
                   ? "bg-primary text-primary-foreground border-primary"
                   : isClickable
-                  ? "bg-card border-border cursor-pointer"
-                  : "bg-muted/50 border-border/50 text-muted-foreground"
-              }`}
+                    ? "bg-card border-border cursor-pointer"
+                    : "bg-muted/50 border-border/50 text-muted-foreground"
+                }`}
               data-testid={`pattern-symbol-${i}`}
             >
               {symbol}
@@ -150,11 +156,10 @@ export function PatternMemory({ data, onComplete }: Props) {
           {data.sequence.map((_, i) => (
             <div
               key={i}
-              className={`w-3 h-3 rounded-full border ${
-                i < playerSequence.length
+              className={`w-3 h-3 rounded-full border ${i < playerSequence.length
                   ? "bg-primary border-primary"
                   : "bg-muted border-border"
-              }`}
+                }`}
             />
           ))}
         </div>

@@ -3,7 +3,7 @@ import { z } from "zod";
 export type CreatureType = "Tech" | "Nature" | "Weird" | "Shadow" | "Pixel" | "Water" | "Glitch" | "Deep";
 export type EncounterAction = "befriend" | "battle" | "study";
 export type JournalStatus = "befriended" | "battled" | "studied";
-export type GadgetId = "trap_camera" | "scanner" | "decoder_wheel" | "map";
+export type GadgetId = "trap_camera" | "scanner" | "decoder_wheel" | "map" | "creature_lure" | "stun_pulser" | "preservation_jar";
 export type ArtifactId =
   | "old_gear"
   | "glowing_mushroom"
@@ -66,10 +66,21 @@ export interface PlayerInventory {
   gadgetUses?: Partial<Record<GadgetId, number>>;
 }
 
+export type UpgradeId = "acoustic_dampening" | "overclocked_emitter" | "optic_augmentation" | "deep_sea_submersible";
+
+export interface Upgrade {
+  id: UpgradeId;
+  name: string;
+  description: string;
+  effect: string;
+  cost: { artifactId: ArtifactId; quantity: number }[];
+}
+
 export interface GameState {
   playerName: string;
   journal: JournalEntry[];
   inventory: PlayerInventory;
+  upgrades?: Record<UpgradeId, boolean>;
   currentLocation: string | null;
   totalEncounters: number;
   solvedCiphers: string[];
@@ -88,7 +99,9 @@ export type PuzzleType =
   | "tide_timing"
   | "frequency_tune"
   | "artifact_sort"
-  | "morse_code";
+  | "morse_code"
+  | "wire_connection"
+  | "mastermind";
 
 export interface SceneHotspot {
   id: string;
@@ -120,7 +133,9 @@ export interface PuzzleConfig {
   | TideTimingData
   | FrequencyTuneData
   | ArtifactSortData
-  | MorseCodeData;
+  | MorseCodeData
+  | WireConnectionData
+  | MastermindData;
 }
 
 export interface PatternMemoryData {
@@ -191,6 +206,18 @@ export interface MorseCodeData {
 export interface ArtifactSortData {
   items: { id: string; name: string; description: string; category: string }[];
   categories: string[];
+}
+export interface WireConnectionData {
+  gridSize: number; // e.g. 4 for 4x4
+  startTile: { r: number; c: number };
+  endTile: { r: number; c: number };
+  timeLimit: number;
+}
+
+export interface MastermindData {
+  codeLength: number;
+  colors: string[]; // Options
+  maxGuesses: number;
 }
 
 export interface ExplorationScene {
@@ -280,7 +307,7 @@ export function derivePlugboardFromSymbols(symbolKeys: string[]): [string, strin
   const set = new Set(symbolKeys.map((k) => k.toUpperCase().replace(/[^A-Z]/g, "")).filter(Boolean));
   const pairs: [string, string][] = [];
   const used = new Set<string>();
-  for (const k of set) {
+  for (const k of Array.from(set)) {
     if (k.length !== 1) continue;
     const m = mirrorLetter(k);
     if (m === k) continue;

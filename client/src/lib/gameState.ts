@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
-import type { GameState, JournalEntry, JournalStatus, ArtifactId, GadgetId } from "@shared/schema";
+import type { GameState, JournalEntry, JournalStatus, ArtifactId, GadgetId, UpgradeId } from "@shared/schema";
 import { getCipherReward, CREATURES } from "@/lib/gameData";
 
 const STORAGE_KEY = "mystery_creature_save";
@@ -20,6 +20,7 @@ type DebugRef = {
   addJournalEntry: (creatureId: string, status: JournalStatus) => void;
   addArtifact: (id: ArtifactId, count?: number) => void;
   craftGadget: (id: GadgetId, recipe: { artifactId: ArtifactId; quantity: number }[]) => boolean;
+  buyUpgrade: (id: UpgradeId, cost: { artifactId: ArtifactId; quantity: number }[]) => boolean;
   useGadget: (id: GadgetId) => boolean;
   solveCipher: (creatureId: string) => ArtifactId | null;
   addDiscoveredSymbol: (key: string) => void;
@@ -75,11 +76,13 @@ type GameStateContextValue = {
   addJournalEntry: (creatureId: string, status: JournalStatus) => void;
   addArtifact: (id: ArtifactId, count?: number) => void;
   craftGadget: (id: GadgetId, recipe: { artifactId: ArtifactId; quantity: number }[]) => boolean;
+  buyUpgrade: (id: UpgradeId, cost: { artifactId: ArtifactId; quantity: number }[]) => boolean;
   useGadget: (id: GadgetId) => boolean;
   solveCipher: (creatureId: string) => ArtifactId | null;
   setPlayerName: (name: string) => void;
   resetGame: () => void;
   hasGadget: (id: GadgetId) => boolean;
+  hasUpgrade: (id: UpgradeId) => boolean;
   getJournalEntry: (creatureId: string) => JournalEntry | undefined;
   addDiscoveredSymbol: (key: string) => void;
   addLoreText: (text: string) => void;
@@ -166,6 +169,37 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const buyUpgrade = useCallback(
+    (upgradeId: UpgradeId, cost: { artifactId: ArtifactId; quantity: number }[]): boolean => {
+      let canBuy = true;
+      setState((prev) => {
+        if (prev.upgrades?.[upgradeId]) return prev; // already have it
+        for (const req of cost) {
+          if ((prev.inventory.artifacts[req.artifactId] || 0) < req.quantity) {
+            canBuy = false;
+            return prev;
+          }
+        }
+        const newArtifacts = { ...prev.inventory.artifacts };
+        for (const req of cost) {
+          newArtifacts[req.artifactId] = Math.max(0, (newArtifacts[req.artifactId] || 0) - req.quantity);
+        }
+        const nextUpgrades = { ...(prev.upgrades || {}) } as Record<UpgradeId, boolean>;
+        nextUpgrades[upgradeId] = true;
+        return {
+          ...prev,
+          inventory: {
+            ...prev.inventory,
+            artifacts: newArtifacts,
+          },
+          upgrades: nextUpgrades,
+        };
+      });
+      return canBuy;
+    },
+    []
+  );
+
   const useGadget = useCallback((gadgetId: GadgetId): boolean => {
     let used = false;
     setState((prev) => {
@@ -220,6 +254,11 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
     [state.inventory.gadgetUses]
   );
 
+  const hasUpgrade = useCallback(
+    (upgradeId: UpgradeId) => !!state.upgrades?.[upgradeId],
+    [state.upgrades]
+  );
+
   const getJournalEntry = useCallback(
     (creatureId: string) => state.journal.find((e) => e.creatureId === creatureId),
     [state.journal]
@@ -246,6 +285,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       addJournalEntry,
       addArtifact,
       craftGadget,
+      buyUpgrade,
       useGadget,
       solveCipher,
       addDiscoveredSymbol,
@@ -262,11 +302,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
     addJournalEntry,
     addArtifact,
     craftGadget,
+    buyUpgrade,
     useGadget,
     solveCipher,
     setPlayerName,
     resetGame,
     hasGadget,
+    hasUpgrade,
     getJournalEntry,
     addDiscoveredSymbol,
     addLoreText,

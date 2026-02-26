@@ -11,6 +11,8 @@ import type {
   ArtifactSortData,
   MorseCodeData,
   ArtifactId,
+  WireConnectionData,
+  MastermindData,
 } from "@shared/schema";
 
 export const SYMBOL_ALPHABET: Record<string, string> = {
@@ -213,7 +215,7 @@ export const FOREST_SCENES: ExplorationScene[] = [
       data: {
         symbols: FOREST_PATTERN_SYMBOLS,
         sequence: [2, 0, 4, 1],
-        displayTime: 3000,
+        displayTime: 1000,
       } as PatternMemoryData,
     },
     rewardArtifact: "strange_feather",
@@ -231,7 +233,7 @@ export const FOREST_SCENES: ExplorationScene[] = [
       data: {
         symbols: FOREST_PATTERN_SYMBOLS,
         sequence: [1, 3, 0, 5, 2],
-        displayTime: 3500,
+        displayTime: 1800,
       } as PatternMemoryData,
     },
     rewardArtifact: "cave_crystal",
@@ -1136,6 +1138,25 @@ export const LAB_SCENES: ExplorationScene[] = [
       },
     ],
   },
+  {
+    id: "lab_wire_puzzle",
+    locationId: "lab",
+    type: "puzzle",
+    title: "Broken Circuit",
+    description: "A terminal is sparking. You need to connect the power nodes to bypass the lockdown.",
+    atmosphere: "Ozone stings your nose. The timer is ticking.",
+    puzzle: {
+      puzzleType: "wire_connection",
+      difficulty: 1,
+      data: {
+        gridSize: 4,
+        startTile: { r: 0, c: 0 },
+        endTile: { r: 3, c: 3 },
+        timeLimit: 15000,
+      } as WireConnectionData,
+    },
+    rewardArtifact: "circuit_board",
+  },
 ];
 
 const ARCADE_PIXEL_PATTERN: number[][] = [
@@ -1347,6 +1368,24 @@ export const ARCADE_SCENES: ExplorationScene[] = [
         reward: { type: "artifact", artifactId: "shadow_dust" },
       },
     ],
+  },
+  {
+    id: "arcade_mastermind",
+    locationId: "arcade",
+    type: "puzzle",
+    title: "The Codebreaker Cabinet",
+    description: "An old game simply titled 'MASTERMIND'. The screen prompts you to input a color sequence.",
+    atmosphere: "The 8-bit music is unnervingly cheerful.",
+    puzzle: {
+      puzzleType: "mastermind",
+      difficulty: 1,
+      data: {
+        codeLength: 4,
+        colors: ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-purple-500", "bg-cyan-500"],
+        maxGuesses: 8,
+      } as MastermindData,
+    },
+    rewardArtifact: "pixel_shard",
   },
 ];
 
@@ -2082,6 +2121,13 @@ export function randomizePuzzle(scene: ExplorationScene): ExplorationScene {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     ad.items = shuffled;
+  } else if (puzzleType === "wire_connection") {
+    const wd = data as WireConnectionData;
+    wd.timeLimit = difficulty === 1 ? 15000 : 12000;
+  } else if (puzzleType === "mastermind") {
+    const md = data as MastermindData;
+    md.codeLength = difficulty === 1 ? 4 : 5;
+    md.maxGuesses = difficulty === 1 ? 8 : 6;
   }
 
   return newScene;

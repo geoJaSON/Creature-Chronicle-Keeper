@@ -544,6 +544,79 @@ export const GADGETS: Gadget[] = [
       { artifactId: "ancient_book", quantity: 1 },
     ],
   },
+  {
+    id: "creature_lure",
+    name: "Creature Lure",
+    description: "Use from the map to immediately trigger an encounter in your current location, skipping exploration.",
+    effect: "lure_encounter",
+    recipe: [
+      { artifactId: "glowing_mushroom", quantity: 2 },
+      { artifactId: "chemical_vial", quantity: 1 },
+    ],
+  },
+  {
+    id: "stun_pulser",
+    name: "Stun Pulser",
+    description: "Use during Battle. The creature skips its next attack turn.",
+    effect: "stun_creature",
+    recipe: [
+      { artifactId: "static_chip", quantity: 1 },
+      { artifactId: "pixel_shard", quantity: 2 },
+    ],
+  },
+  {
+    id: "preservation_jar",
+    name: "Preservation Jar",
+    description: "Use before an encounter. If you successfully capture or study the creature, artifact drops are doubled.",
+    effect: "double_drops",
+    recipe: [
+      { artifactId: "chemical_vial", quantity: 1 },
+      { artifactId: "cave_crystal", quantity: 2 },
+    ],
+  },
+];
+
+export const UPGRADES: import("@shared/schema").Upgrade[] = [
+  {
+    id: "acoustic_dampening",
+    name: "Acoustic Dampening",
+    description: "+10% base Befriend chance.",
+    effect: "Befriend",
+    cost: [
+      { artifactId: "shadow_dust", quantity: 3 },
+      { artifactId: "strange_feather", quantity: 3 },
+    ],
+  },
+  {
+    id: "overclocked_emitter",
+    name: "Overclocked Emitter",
+    description: "Battles deal +1 bonus damage permanently.",
+    effect: "Battle",
+    cost: [
+      { artifactId: "circuit_board", quantity: 3 },
+      { artifactId: "static_chip", quantity: 3 },
+    ],
+  },
+  {
+    id: "optic_augmentation",
+    name: "Optic Augmentation",
+    description: "Puzzle minigames give +3 seconds on the timer.",
+    effect: "Puzzle",
+    cost: [
+      { artifactId: "pixel_shard", quantity: 3 },
+      { artifactId: "ancient_book", quantity: 2 },
+    ],
+  },
+  {
+    id: "deep_sea_submersible",
+    name: "Deep Sea Submersible",
+    description: "Unlocks a hidden sub-area in the Dock location.",
+    effect: "Exploration",
+    cost: [
+      { artifactId: "rusty_anchor", quantity: 5 },
+      { artifactId: "glowing_mushroom", quantity: 5 },
+    ],
+  },
 ];
 
 export const LOCATIONS = [

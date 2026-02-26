@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, RotateCcw, Eye } from "lucide-react";
 import type { PixelMatchData } from "@shared/schema";
+import { useGameState } from "@/lib/gameState";
 
 interface Props {
   data: PixelMatchData;
@@ -22,6 +23,7 @@ const PIXEL_COLORS = [
 type Phase = "showing" | "choosing" | "result";
 
 export function PixelMatch({ data, onComplete }: Props) {
+  const { hasUpgrade } = useGameState();
   const [phase, setPhase] = useState<Phase>("showing");
   const [selected, setSelected] = useState<number | null>(null);
   const [success, setSuccess] = useState<boolean | null>(null);
@@ -30,9 +32,10 @@ export function PixelMatch({ data, onComplete }: Props) {
     setPhase("showing");
     setSelected(null);
     setSuccess(null);
-    const timer = setTimeout(() => setPhase("choosing"), data.displayTime);
+    const bonusTime = hasUpgrade("optic_augmentation") ? 3000 : 0;
+    const timer = setTimeout(() => setPhase("choosing"), data.displayTime + bonusTime);
     return () => clearTimeout(timer);
-  }, [data.displayTime]);
+  }, [data.displayTime, hasUpgrade]);
 
   useEffect(() => {
     const cleanup = startShowing();
@@ -121,9 +124,8 @@ export function PixelMatch({ data, onComplete }: Props) {
                     key={i}
                     whileTap={phase === "choosing" ? { scale: 0.95 } : {}}
                     onClick={() => handleOptionClick(i)}
-                    className={`p-3 rounded-xl border-2 ${borderClass} transition-colors ${
-                      phase === "choosing" ? "cursor-pointer bg-card" : "bg-card"
-                    }`}
+                    className={`p-3 rounded-xl border-2 ${borderClass} transition-colors ${phase === "choosing" ? "cursor-pointer bg-card" : "bg-card"
+                      }`}
                     data-testid={`pixel-option-${i}`}
                   >
                     {renderGrid(option, 12, `pixel-grid-option-${i}`)}

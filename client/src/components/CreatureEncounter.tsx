@@ -20,6 +20,7 @@ import {
 import type { Creature, ArtifactId, GadgetId } from "@shared/schema";
 import { ARTIFACTS, TYPE_BG, TYPE_BADGE, RARITY_COLORS, getArtifactsDropped, getStudyDrops } from "@/lib/gameData";
 import { CreatureSprite } from "@/components/CreatureSprite";
+import { useGameState } from "@/lib/gameState";
 
 type Phase = "intro" | "action" | "battle" | "result";
 type ActionChoice = "befriend" | "battle" | "study";
@@ -44,6 +45,7 @@ function BattleView({
   playerHasAdvantage: boolean;
   onEnd: (won: boolean) => void;
 }) {
+  const { hasUpgrade, hasGadget, useGadget } = useGameState();
   const [playerHP, setPlayerHP] = useState(20);
   const [creatureHP, setCreatureHP] = useState(creature.battlePower * 2);
   const [log, setLog] = useState<string[]>(() =>
@@ -51,7 +53,7 @@ function BattleView({
       ? [`Type advantage! ${creature.weakAgainst}-type weakness exploited.`, "Battle started!"]
       : ["Battle started!"]
   );
-  const [turn, setTurn] = useState<"player" | "creature" | "done">("player");
+  const [turn, setTurn] = useState<"player" | "creature" | "stunned" | "done">("player");
   const [shake, setShake] = useState<"player" | "creature" | null>(null);
   const maxCreatureHP = creature.battlePower * 2;
 
@@ -60,13 +62,15 @@ function BattleView({
   const playerAttack = () => {
     if (turn !== "player") return;
     const baseDmg = Math.floor(Math.random() * 4) + 3;
-    const bonus = playerHasAdvantage ? 2 : 0;
-    const dmg = baseDmg + bonus;
+    const advantageBonus = playerHasAdvantage ? 2 : 0;
+    const upgradeBonus = hasUpgrade("overclocked_emitter") ? 1 : 0;
+    const dmg = baseDmg + advantageBonus + upgradeBonus;
     const newCreatureHP = Math.max(0, creatureHP - dmg);
     setCreatureHP(newCreatureHP);
     setShake("creature");
     setTimeout(() => setShake(null), 400);
-    addLog(bonus > 0 ? `Super effective! You hit for ${dmg}!` : `You hit for ${dmg} damage!`);
+    const bonusText = advantageBonus > 0 ? "Super effective! " : upgradeBonus > 0 ? "Overclocked! " : "";
+    addLog(`${bonusText}You hit for ${dmg} damage!`);
     if (newCreatureHP <= 0) {
       addLog("You won!");
       setTurn("done");
@@ -82,7 +86,21 @@ function BattleView({
     setTurn("creature");
   };
 
+  const useStunPulser = () => {
+    if (turn !== "player" || !hasGadget("stun_pulser")) return;
+    useGadget("stun_pulser");
+    addLog("You used a Stun Pulser! The creature is blinded.");
+    setTurn("stunned");
+  };
+
   useEffect(() => {
+    if (turn === "stunned") {
+      const timer = setTimeout(() => {
+        addLog(`${creature.name} is stunned and misses its turn!`);
+        setTurn("player");
+      }, 900);
+      return () => clearTimeout(timer);
+    }
     if (turn === "creature") {
       const timer = setTimeout(() => {
         const reducedDmg = log[log.length - 1]?.includes("brace") ? 1 : 0;
@@ -194,11 +212,23 @@ function BattleView({
           <Shield className="w-3 h-3 mr-1" /> Defend
         </Button>
       </div>
+      {hasGadget("stun_pulser") && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={useStunPulser}
+          disabled={turn !== "player"}
+          className="w-full border-cyan-500/50 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10"
+        >
+          <Zap className="w-3 h-3 mr-1" /> Use Stun Pulser
+        </Button>
+      )}
     </div>
   );
 }
 
 export function CreatureEncounter({ creature, open, onClose, hasScanner, hasTrapCamera, onUseGadget, onResult }: Props) {
+  const { hasUpgrade, hasGadget, useGadget } = useGameState();
   const [phase, setPhase] = useState<Phase>("intro");
   const [actionChoice, setActionChoice] = useState<ActionChoice | null>(null);
   const [resultType, setResultType] = useState<ResultType | null>(null);
@@ -215,11 +245,16 @@ export function CreatureEncounter({ creature, open, onClose, hasScanner, hasTrap
 
   const handleAction = (action: ActionChoice) => {
     const usedTrapCamera = action === "study" && hasTrapCamera;
+    const hasJar = hasGadget("preservation_jar");
+    let usedJar = false;
+
     if (usedTrapCamera) onUseGadget("trap_camera");
     setActionChoice(action);
+
     if (action === "study") {
+      if (hasJar) { usedJar = true; useGadget("preservation_jar"); }
       const d = getStudyDrops(creature, usedTrapCamera);
-      setDrops(d);
+      setDrops(usedJar ? [...d, ...d] : d);
       setResultType("success");
       setPhase("result");
     } else if (action === "battle") {
@@ -227,11 +262,13 @@ export function CreatureEncounter({ creature, open, onClose, hasScanner, hasTrap
       setPhase("battle");
     } else if (action === "befriend") {
       if (hasScanner) onUseGadget("scanner");
+      if (hasJar) { usedJar = true; useGadget("preservation_jar"); }
       const roll = Math.random();
-      const threshold = creature.friendliness / 10;
+      let threshold = creature.friendliness / 10;
+      if (hasUpgrade("acoustic_dampening")) threshold += 0.1;
       const d = getArtifactsDropped(creature);
       if (roll < threshold) {
-        setDrops(d);
+        setDrops(usedJar ? [...d, ...d] : d);
         setResultType("success");
       } else {
         setDrops([]);
@@ -243,7 +280,10 @@ export function CreatureEncounter({ creature, open, onClose, hasScanner, hasTrap
 
   const handleBattleEnd = (won: boolean) => {
     if (won) {
-      setDrops(getArtifactsDropped(creature));
+      const hasJar = hasGadget("preservation_jar");
+      if (hasJar) useGadget("preservation_jar");
+      const d = getArtifactsDropped(creature);
+      setDrops(hasJar ? [...d, ...d] : d);
       setResultType("success");
     } else {
       setDrops([]);
