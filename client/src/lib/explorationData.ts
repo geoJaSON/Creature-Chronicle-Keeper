@@ -239,6 +239,24 @@ export const FOREST_SCENES: ExplorationScene[] = [
     rewardArtifact: "cave_crystal",
   },
   {
+    id: "forest_echo_sequence",
+    locationId: "forest",
+    type: "puzzle",
+    title: "The Echoing Grove",
+    description: "Wind moves through the trees in deliberate gusts. Each tree flashes with light, answering another and passing a pattern around the circle.",
+    atmosphere: "The forest speaks in echoes of light. You just have to watch the flashes in the right order.",
+    puzzle: {
+      puzzleType: "echo_sequence",
+      difficulty: 1,
+      data: {
+        symbols: FOREST_PATTERN_SYMBOLS,
+        sequence: [0, 2, 4, 1, 3, 5],
+        rounds: 3,
+      } as EchoSequenceData,
+    },
+    rewardArtifact: "strange_feather",
+  },
+  {
     id: "forest_creature_care",
     locationId: "forest",
     type: "puzzle",
@@ -439,6 +457,54 @@ export const LIBRARY_SCENES: ExplorationScene[] = [
       } as SymbolCipherData,
     },
     rewardArtifact: "circuit_board",
+  },
+  {
+    id: "library_sort_table",
+    locationId: "library",
+    type: "puzzle",
+    title: "The Sorting Desk",
+    description: "A reshelving cart overflows with books from every section. The classification cards have been shuffled.",
+    atmosphere: "The catalog lights blink impatiently, as if judging your filing system.",
+    puzzle: {
+      puzzleType: "artifact_sort",
+      difficulty: 1,
+      data: {
+        items: [
+          {
+            id: "atlas",
+            name: "Crumpled Atlas",
+            description: "Maps of continents that never existed, with sea monsters in the margins.",
+            category: "History",
+          },
+          {
+            id: "lab_notes",
+            name: "Scorched Lab Notebook",
+            description: "Filled with chemical diagrams and warnings like 'DO NOT MIX THESE.'",
+            category: "Science",
+          },
+          {
+            id: "ghost_story",
+            name: "Dog-Eared Ghost Story",
+            description: "Every time you flip a page, the ending changes.",
+            category: "Fiction",
+          },
+          {
+            id: "star_chart",
+            name: "Annotated Star Chart",
+            description: "Constellations are circled with notes like 'moved last week'.",
+            category: "Science",
+          },
+          {
+            id: "town_archive",
+            name: "Town Archive Ledger",
+            description: "Lists every book ever checked out. Some entries are dated decades in the future.",
+            category: "History",
+          },
+        ],
+        categories: ["History", "Science", "Fiction"],
+      } as ArtifactSortData,
+    },
+    rewardArtifact: "ancient_book",
   },
   {
     id: "library_choice",
@@ -871,6 +937,24 @@ export const CAVE_SCENES: ExplorationScene[] = [
       data: {
         word: "DEEP",
       } as MorseCodeData,
+    },
+    rewardArtifact: "cave_crystal",
+  },
+  {
+    id: "cave_echo_sequence",
+    locationId: "cave",
+    type: "puzzle",
+    title: "Crystal Echo Choir",
+    description: "Far below, a ring of crystals lights up one after another, each flash bouncing off the walls in a specific order.",
+    atmosphere: "Every echo answers another. The cave is teaching you a new song.",
+    puzzle: {
+      puzzleType: "echo_sequence",
+      difficulty: 1,
+      data: {
+        symbols: ["\u25C6", "\u25C8", "\u25CF", "\u25CE"],
+        sequence: [0, 1, 2, 3, 2, 1],
+        rounds: 3,
+      } as EchoSequenceData,
     },
     rewardArtifact: "cave_crystal",
   },

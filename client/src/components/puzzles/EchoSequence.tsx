@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, RotateCcw, Volume2 } from "lucide-react";
+import { CheckCircle, XCircle, RotateCcw, Eye } from "lucide-react";
 import type { EchoSequenceData } from "@shared/schema";
 
 interface Props {
@@ -114,8 +114,8 @@ export function EchoSequence({ data, onComplete }: Props) {
             exit={{ opacity: 0 }}
             className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2"
           >
-            <Volume2 className="w-4 h-4" />
-            <span>Listen to the echo... ({currentSequence.length} tones)</span>
+            <Eye className="w-4 h-4" />
+            <span>Watch the echoing lights... ({currentSequence.length} flashes)</span>
           </motion.div>
         )}
         {phase === "input" && (
